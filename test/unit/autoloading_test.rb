@@ -1,3 +1,5 @@
+require 'test_helper'
+
 describe "#{GraphQL::Client} Autoloading" do
   describe ".load_constant" do
     it "loads the specified constant if there is a matching graphql file" do
@@ -5,11 +7,11 @@ describe "#{GraphQL::Client} Autoloading" do
 
       Metaphysics.load_constant(:Artist)
 
-      expect(defined?(Metaphysics::Artist)).to eq('constant')
+      assert_equal 'constant', defined?(Metaphysics::Artist)
     end
 
     it "does nothing and returns nil if there is no matching file" do
-      expect(Metaphysics.load_constant(:DoesNotExist)).to be_nil
+      assert_nil Metaphysics.load_constant(:DoesNotExist)
     end
   end
 
@@ -21,8 +23,8 @@ describe "#{GraphQL::Client} Autoloading" do
 
       Metaphysics.preload!
 
-      expect(defined?(Metaphysics::Artist)).to eq('constant')
-      expect(defined?(Metaphysics::Artwork)).to eq('constant')
+      assert_equal 'constant', defined?(Metaphysics::Artist)
+      assert_equal 'constant', defined?(Metaphysics::Artwork)
     end
   end
 
@@ -31,7 +33,7 @@ describe "#{GraphQL::Client} Autoloading" do
 
     query = Metaphysics::Artist
 
-    expect(query.document.to_query_string).to eq(<<~GRAPHQL.strip)
+    assert_equal <<~GRAPHQL.strip, query.document.to_query_string
       query Metaphysics__Artist($id: String!) {
         artist(id: $id) {
           name
@@ -47,7 +49,7 @@ describe "#{GraphQL::Client} Autoloading" do
 
     query = Metaphysics::ArtistFragment
 
-    expect(query.document.to_query_string).to eq(<<~GRAPHQL.strip)
+    assert_equal <<~GRAPHQL.strip, query.document.to_query_string
       fragment Metaphysics__ArtistFragment on Artist {
         hometown
         deathday
@@ -71,7 +73,7 @@ describe "#{GraphQL::Client} Autoloading" do
 
     query = Metaphysics::Artist
 
-    expect(query.document.to_query_string).to eq(<<~GRAPHQL.strip)
+    assert_equal <<~GRAPHQL.strip, query.document.to_query_string
       query Metaphysics__Artist($id: String!) {
         artist(id: $id) {
           name
@@ -86,61 +88,75 @@ describe "#{GraphQL::Client} Autoloading" do
     begin
       Metaphysics.graphql_file_paths << "metaphysics/removed.graphql"
 
-      expect { Metaphysics::Removed }.to raise_error(Errno::ENOENT)
+      assert_raises Errno::ENOENT do
+        Metaphysics::Removed
+      end
     ensure
       Metaphysics.graphql_file_paths.delete("metaphysics/removed.graphql")
     end
   end
 
   it "raises an NameError when there is no graphql file that matches the const name" do
-    expect { Metaphysics::DoesNotExist }.to raise_error(NameError)
+    assert_raises NameError do
+      Metaphysics::DoesNotExist
+    end
   end
 
-  xit "defines the query method when the matching class method gets called for the first time" do
+  it "defines the query method when the matching class method gets called for the first time" do
+    skip
     Metaphysics.undef_method(:artwork) if Metaphysics.public_instance_methods.include?(:artwork)
 
     Metaphysics.artwork
 
-    expect(Metaphysics.public_instance_methods).to include(:artwork)
+    assert_includes :artwork, Metaphysics.public_instance_methods
   end
 
   it "raises an NameError when there is no graphql file that matches the class method name" do
-    expect { Metaphysics.does_not_exist }.to raise_error(NameError)
+    assert_raises NameError do
+      Metaphysics.does_not_exist
+    end
   end
 
   it "raises an NameError when the class method name matches a fragment name" do
-    expect { Metaphysics.artist_fragment }.to raise_error(NameError)
+    assert_raises NameError do
+      Metaphysics.artist_fragment
+    end
   end
 
   it "responds to a class method that has a matching graphQL file" do
-    expect(Metaphysics).to respond_to(:artwork)
+    assert_respond_to Metaphysics, :artwork
   end
 
   it "does not respond to class methods that do not have a matching graphQL file" do
-    expect(Metaphysics).not_to respond_to(:does_not_exist)
+    refute_respond_to Metaphysics, :does_not_exist
   end
 
-  xit "defines the query method when the matching instance method gets called for the first time" do
+  it "defines the query method when the matching instance method gets called for the first time" do
+    skip
     Metaphysics.undef_method(:artwork) if Metaphysics.public_instance_methods.include?(:artwork)
 
     Metaphysics.new.artwork
 
-    expect(Metaphysics.public_instance_methods).to include(:artwork)
+    assert_include :artwork, Metaphysics.public_instance_methods
   end
 
   it "raises an NameError when there is no graphql file that matches the instance method name" do
-    expect { Metaphysics.new.does_not_exist }.to raise_error(NameError)
+    assert_raises NameError do
+      Metaphysics.new.does_not_exist
+    end
   end
 
   it "raises an NameError when the instance method name matches a fragment name" do
-    expect { Metaphysics.new.artist_fragment }.to raise_error(NameError)
+    assert_raises NameError do
+      Metaphysics.new.artist_fragment
+    end
   end
 
   it "responds to the method that has a matching graphQL file" do
-    expect(Metaphysics.new).to respond_to(:artwork)
+    assert_respond_to Metaphysics.new, :artworka
   end
 
   it "does not respond to methods that do not have a matching graphQL file" do
-    expect(Metaphysics.new).not_to respond_to(:does_not_exist)
+    refute_respond_to Metaphysics.new, :does_not_exist
   end
 end

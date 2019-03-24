@@ -3,8 +3,6 @@ require 'rails/generators/test_case'
 
 require 'generators/artemis/mutation/mutation_generator'
 
-require_relative '../../spec/fixtures/metaphysics'
-
 class MutationGeneratorTest < Rails::Generators::TestCase
   tests Artemis::MutationGenerator
   arguments %w(saveArtwork)

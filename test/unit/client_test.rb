@@ -1,3 +1,5 @@
+require 'test_helper'
+
 describe GraphQL::Client do
   before do
     requests.clear
@@ -5,11 +7,11 @@ describe GraphQL::Client do
 
   describe ".lookup_graphql_file" do
     it "returns the path to the matching graph file" do
-      expect(Metaphysics.resolve_graphql_file_path("artist")).to eq("#{PROJECT_DIR}/spec/fixtures/metaphysics/artist.graphql")
+      assert_equal "#{PROJECT_DIR}/test/fixtures/metaphysics/artist.graphql", Metaphysics.resolve_graphql_file_path("artist")
     end
 
     it "returns nil if the file is missing" do
-      expect(Metaphysics.resolve_graphql_file_path("does_not_exist")).to be_nil
+      assert_nil Metaphysics.resolve_graphql_file_path("does_not_exist")
     end
   end
 
@@ -24,7 +26,7 @@ describe GraphQL::Client do
         FileUtils.mkdir "./tmp/metaphysics" if !Dir.exist?("./tmp/metaphysics")
 
         with_files "./tmp/metaphysics/text.txt", "./tmp/metaphysics/sale.graphql" do
-          expect(Metaphysics.graphql_file_paths).to eq(["#{PROJECT_DIR}/tmp/metaphysics/sale.graphql"])
+          assert_equal ["#{PROJECT_DIR}/tmp/metaphysics/sale.graphql"], Metaphysics.graphql_file_paths
         end
       ensure
         Metaphysics.instance_variable_set :@graphql_file_paths, nil
@@ -38,10 +40,10 @@ describe GraphQL::Client do
 
     request = requests[0]
 
-    expect(request.operation_name).to eq('Metaphysics__Artwork')
-    expect(request.variables).to be_empty
-    expect(request.context).to eq({})
-    expect(request.document.to_query_string).to eq(<<~GRAPHQL.strip)
+    assert_equal 'Metaphysics__Artwork', request.operation_name
+    assert_equal({}, request.variables)
+    assert_equal({}, request.context)
+    assert_equal <<~GRAPHQL.strip, request.document.to_query_string
       query Metaphysics__Artwork {
         artwork(id: "yayoi-kusama-pumpkin-yellow-and-black") {
           title
@@ -58,10 +60,10 @@ describe GraphQL::Client do
 
     request = requests[0]
 
-    expect(request.operation_name).to eq('Metaphysics__Artist')
-    expect(request.variables).to eq('id' => 'yayoi-kusama')
-    expect(request.context).to eq({})
-    expect(request.document.to_query_string).to eq(<<~GRAPHQL.strip)
+    assert_equal 'Metaphysics__Artist', request.operation_name
+    assert_equal({ 'id' => 'yayoi-kusama' }, request.variables)
+    assert_equal({}, request.context)
+    assert_equal <<~GRAPHQL.strip, request.document.to_query_string
       query Metaphysics__Artist($id: String!) {
         artist(id: $id) {
           name
@@ -77,10 +79,10 @@ describe GraphQL::Client do
 
     request = requests[0]
 
-    expect(request.operation_name).to eq('Metaphysics__Artists')
-    expect(request.variables).to eq('size' => 10)
-    expect(request.context).to eq({})
-    expect(request.document.to_query_string).to eq(<<~GRAPHQL.strip)
+    assert_equal 'Metaphysics__Artists', request.operation_name
+    assert_equal({ 'size' => 10 }, request.variables)
+    assert_equal({}, request.context)
+    assert_equal <<~GRAPHQL.strip, request.document.to_query_string
       query Metaphysics__Artists($size: Int!) {
         artists(size: $size) {
           name
@@ -102,10 +104,10 @@ describe GraphQL::Client do
 
     request = requests[0]
 
-    expect(request.operation_name).to eq('Metaphysics__Artist')
-    expect(request.variables).to eq('id' => 'yayoi-kusama')
-    expect(request.context).to eq({})
-    expect(request.document.to_query_string).to eq(<<~GRAPHQL.strip)
+    assert_equal 'Metaphysics__Artist', request.operation_name
+    assert_equal({ 'id' => 'yayoi-kusama' }, request.variables)
+    assert_equal({}, request.context)
+    assert_equal <<~GRAPHQL.strip, request.document.to_query_string
       query Metaphysics__Artist($id: String!) {
         artist(id: $id) {
           name
@@ -117,9 +119,11 @@ describe GraphQL::Client do
   end
 
   it "can make a GraphQL request with #execute" do
-    expect { Metaphysics.execute(:does_not_exist) }
-      .to raise_error(Artemis::GraphQLFileNotFound)
-      .with_message(/Query does_not_exist\.graphql not found/)
+    error = assert_raises Artemis::GraphQLFileNotFound do
+      Metaphysics.execute(:does_not_exist)
+    end
+
+    assert_match /Query does_not_exist\.graphql not found/, error.message
   end
 
   it "assigns context to the request when provided as an argument" do
@@ -127,7 +131,7 @@ describe GraphQL::Client do
 
     Metaphysics.artist(id: "yayoi-kusama", context: context)
 
-    expect(requests[0].context).to eq(context)
+    assert_equal context, requests[0].context
   end
 
   it "can create a client that always assigns the provided context to the request" do
@@ -137,8 +141,8 @@ describe GraphQL::Client do
     client.artist(id: "yayoi-kusama")
     client.artist(id: "yayoi-kusama")
 
-    expect(requests[0].context).to eq(context)
-    expect(requests[1].context).to eq(context)
+    assert_equal context, requests[0].context
+    assert_equal context, requests[1].context
   end
 
   it "assigns the default context to a GraphQL request if present" do
@@ -146,7 +150,7 @@ describe GraphQL::Client do
       Metaphysics.default_context = { headers: { Authorization: 'bearer ...' } }
       Metaphysics.artist(id: "yayoi-kusama")
 
-      expect(requests[0].context).to eq(headers: { Authorization: 'bearer ...' })
+      assert_equal({ headers: { Authorization: 'bearer ...' } }, requests[0].context)
     ensure
       Metaphysics.default_context = { }
     end
@@ -159,13 +163,13 @@ describe GraphQL::Client do
           .with_context({ headers: { 'X-key': 'overridden' } })
           .artist(id: "yayoi-kusama", context: { headers: { Authorization: 'bearer ...' } })
 
-      expect(requests[0].context).to eq(
+      assert_equal(requests[0].context, {
         headers: {
           'User-Agent': 'Artemis',
           'X-key': 'overridden',
           Authorization: 'bearer ...',
         }
-      )
+      })
     ensure
       Metaphysics.default_context = { }
     end

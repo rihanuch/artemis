@@ -1,3 +1,5 @@
+require 'test_helper'
+
 require 'active_support/core_ext/module/attribute_accessors'
 
 describe "#{GraphQL::Client} Callbacks" do
@@ -25,10 +27,10 @@ describe "#{GraphQL::Client} Callbacks" do
 
       document, operation_name, variables, context = Client.before_callback
 
-      expect(document).to eq(Client::Artist.document)
-      expect(operation_name).to eq('Client__Artist')
-      expect(variables).to eq('id' => 'yayoi-kusama')
-      expect(context).to eq(user_id: 'yuki24')
+      assert_equal Client::Artist.document, document
+      assert_equal 'Client__Artist', operation_name
+      assert_equal({ 'id' => 'yayoi-kusama' }, variables)
+      assert_equal({ user_id: 'yuki24' }, context)
     end
   end
 
@@ -38,9 +40,9 @@ describe "#{GraphQL::Client} Callbacks" do
 
       data, errors, extensions = Client.after_callback
 
-      expect(data).to eq("test" => "data")
-      expect(errors).to eq([])
-      expect(extensions).to eq({})
+      assert_equal({ "test" => "data" }, data)
+      assert_equal [], errors
+      assert_equal({}, extensions)
     end
   end
 end

@@ -3,8 +3,6 @@ require 'rails/generators/test_case'
 
 require 'generators/artemis/query/query_generator'
 
-require_relative '../../spec/fixtures/metaphysics'
-
 class QueryGeneratorTest < Rails::Generators::TestCase
   tests Artemis::QueryGenerator
   arguments %w(artist)

@@ -1,15 +1,23 @@
+require 'test_helper'
+
 describe Artemis::GraphQLEndpoint do
+  after do
+    Artemis::GraphQLEndpoint.const_get(:ENDPOINT_INSTANCES).delete 'github'
+  end
+
   describe ".lookup" do
     it "raises an exception when the service is missing" do
-      expect { Artemis::GraphQLEndpoint.lookup(:does_not_exit) }.to raise_error(Artemis::EndpointNotFound)
+      assert_raises Artemis::EndpointNotFound do
+        Artemis::GraphQLEndpoint.lookup(:does_not_exit)
+      end
     end
   end
 
   it "can register an endpoint" do
     endpoint = Artemis::GraphQLEndpoint.register!(:github, url: "https://api.github.com/graphql")
 
-    expect(endpoint.url).to eq("https://api.github.com/graphql")
-    expect(endpoint.connection).to be_instance_of(Artemis::Adapters::NetHttpAdapter)
+    assert_equal "https://api.github.com/graphql", endpoint.url
+    assert_instance_of Artemis::Adapters::NetHttpAdapter, endpoint.connection # Not a fan of this test but for now
   end
 
   it "can look up a registered endpoint" do
@@ -17,8 +25,8 @@ describe Artemis::GraphQLEndpoint do
 
     endpoint = Artemis::GraphQLEndpoint.lookup(:github)
 
-    expect(endpoint.url).to eq("https://api.github.com/graphql")
-    expect(endpoint.connection).to be_instance_of(Artemis::Adapters::NetHttpAdapter) # Not a fan of this test but for now
+    assert_equal "https://api.github.com/graphql", endpoint.url
+    assert_instance_of Artemis::Adapters::NetHttpAdapter, endpoint.connection # Not a fan of this test but for now
 
     # FIXME: This #schema method makes a network call.
     # expect(endpoint.schema).to eq(...)
@@ -34,10 +42,10 @@ describe Artemis::GraphQLEndpoint do
 
     endpoint = Artemis::GraphQLEndpoint.register!(:github, url: "https://api.github.com/graphql", **options)
 
-    expect(endpoint.url).to eq("https://api.github.com/graphql")
-    expect(endpoint.timeout).to eq(10)
-    expect(endpoint.pool_size).to eq(25)
-    expect(endpoint.connection).to be_instance_of(Artemis::Adapters::TestAdapter) # Not a fan of this test but for now
+    assert_equal "https://api.github.com/graphql", endpoint.url
+    assert_equal 10, endpoint.timeout
+    assert_equal 25, endpoint.pool_size
+    assert_instance_of Artemis::Adapters::TestAdapter, endpoint.connection # Not a fan of this test but for now
 
     # FIXME: needs an example schema (and specify the :schema_path option) to test this.
     # expect(endpoint.schema).to eq(...)

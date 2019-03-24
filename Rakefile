@@ -2,7 +2,7 @@ require "bundler/gem_tasks"
 require "rake/testtask"
 require 'rspec/core/rake_task'
 
-TESTS_IN_ISOLATION = ['test/railtie_test.rb', 'test/rake_tasks_test.rb']
+TESTS_IN_ISOLATION = FileList['test/isolated/**/*_test.rb']
 
 Rake::TestTask.new(:test) do |t|
   t.libs << "test"
