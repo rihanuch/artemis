@@ -103,11 +103,7 @@ describe 'Adapters' do
 
   describe Artemis::Adapters::NetHttpPersistentAdapter do
     let(:adapter) { Artemis::Adapters::NetHttpPersistentAdapter.new('http://localhost:8000', service_name: nil, timeout: 0.5, pool_size: 5) }
-    if RUBY_VERSION >= '3.0.0'
-      let(:timeout_error) { Net::ReadTimeout }
-    else
-      let(:timeout_error) { Net::HTTP::Persistent::Error }
-    end
+    let(:timeout_error) { Net::ReadTimeout }
 
     it_behaves_like 'an adapter'
   end
