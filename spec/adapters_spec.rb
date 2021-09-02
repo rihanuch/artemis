@@ -108,7 +108,7 @@ describe 'Adapters' do
     it_behaves_like 'an adapter'
   end
 
-  if RUBY_ENGINE == 'curb'
+  if RUBY_ENGINE == 'ruby'
     describe Artemis::Adapters::CurbAdapter do
       let(:adapter) { Artemis::Adapters::CurbAdapter.new('http://localhost:8000', service_name: nil, timeout: 2, pool_size: 5) }
       let(:timeout_error) { Curl::Err::TimeoutError }

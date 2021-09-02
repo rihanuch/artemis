@@ -1,10 +1,10 @@
-appraise "rails_edge" do
-  git 'https://github.com/rails/rails.git' do
-    gem "rails"
-    gem "railties"
-    gem "activesupport"
-  end
-end
+# appraise "rails_edge" do
+#   git 'https://github.com/rails/rails.git' do
+#     gem "rails"
+#     gem "railties"
+#     gem "activesupport"
+#   end
+# end
 
 appraise "rails_61" do
   gem "rails", '~> 6.1.0'
